@@ -158,7 +158,19 @@ class ArgDataset(Dataset):
                                                                        encode_passage=opt.encode_passage)
 
         self.size = len(self.src_lens)
-
+        inners = []
+        for idx in range(self.size):
+            inner_inputs, inner_lens, _ = utils.encode_text_to_id_lists(op_list=raw_data_src["inner"][idx]["body"],
+                                                                       passage_list=raw_data_src["inner"][idx]["passages"],
+                                                                       vocab=vocab,
+                                                                       max_op_words=opt.max_src_words,
+                                                                       max_passage_words=opt.max_passage_words,
+                                                                       encode_passage=opt.encode_passage)
+            tmpDict = dict()
+            tmpDict['inputs'] = inner_inputs
+            tmpDict['lens'] = inner_lens
+            inners.append(tmpDict)
+        self.inners = inners
 
     def load_phrase_bank(self, raw_data_ph, opt, vocab):
         self.phrase_bank_wids, self.phrase_bank_words = utils.encode_phrase_bank_to_id_lists(
@@ -196,6 +208,7 @@ class ArgDataset(Dataset):
         assert len(self.phrase_selection_inputs) == self.size
         assert len(self.phrase_bank) == self.size
         assert len(self.phrase_bank_selection_index) == self.size
+        assert len(self.inners) == self.size
 
     def load_test_data(self, raw_data, opt, vocab):
         self.load_source(raw_data, opt=opt, vocab=vocab)
@@ -208,6 +221,7 @@ class ArgDataset(Dataset):
         if self.set_type in ["train", "dev"]:
             return {"src_inputs": self.src_inputs[index],
                     "src_lens": self.src_lens[index],
+                    "inners": self.inners[index],
                     "tgt_word_ids_input": self.tgt_word_ids_input[index],
                     "tgt_word_ids_output": self.tgt_word_ids_output[index],
                     "tgt_sent_ids": self.tgt_sent_ids[index],

@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import glob
+from sys import exit
 
 import torch
 import torch.nn as nn
@@ -161,16 +162,17 @@ def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
             model.eval()
             avg_losses, avg_val_ppl, cs_acc, st_acc = valid_epoch(model, dev_data_sampler, opt, device)
 
-        ckpt_name = ckpt_path + "epoch_%d_train_%.4f_val_%.4f_ppl_%.4f.tar" % \
-                                (n_epoch, avg_train_losses["total"], avg_losses["total"], avg_val_ppl)
-        ckpt_dict = {"embedding": model.word_emb.state_dict(),
-                     "encoder": model.encoder.state_dict(),
-                     "word_decoder": model.wd_dec.state_dict(),
-                     "planning_decoder": model.sp_dec.state_dict(),
-                     "optimizer": optimizer.state_dict,
-                     "epoch": n_epoch,}
+        if n_epoch % 5 == 1:
+            ckpt_name = ckpt_path + "epoch_%d_train_%.4f_val_%.4f_ppl_%.4f.tar" % \
+                                    (n_epoch, avg_train_losses["total"], avg_losses["total"], avg_val_ppl)
+            ckpt_dict = {"embedding": model.word_emb.state_dict(),
+                        "encoder": model.encoder.state_dict(),
+                        "word_decoder": model.wd_dec.state_dict(),
+                        "planning_decoder": model.sp_dec.state_dict(),
+                        "optimizer": optimizer.state_dict,
+                        "epoch": n_epoch,}
 
-        torch.save(ckpt_dict, ckpt_name)
+            torch.save(ckpt_dict, ckpt_name)
         if opt.task == "absgen":
             fout_log.write("epoch: {:3d}\ttrain_loss: {:.3f}\ttrain_kp_sel_loss: {:.3f}"
                            "\tval_loss: {:.3f}\tval_ppl: {:.3f}\tkp_sel_acc: {:.4f}\n".
@@ -230,9 +232,11 @@ def run_inference(model, test_data_raw, vocab, opt, device):
     fout_log.close()
     return
 
-
-
 def main():
+
+    # print(torch.cuda.is_available())
+    # exit()
+
     logging.info("Loading vocabulary and embedding...")
     vocab = Vocabulary(opt.task)
     glove_emb = misc_utils.load_glove_emb(vocab)
@@ -240,7 +244,9 @@ def main():
 
     logging.info("Building generation model...")
 
+    os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cpu")
 
 
     model = TASK_CONFIG[opt.task][0](word_emb=word_emb, vocab_size=len(vocab), opt=opt).to(device)

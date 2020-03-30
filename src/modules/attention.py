@@ -76,7 +76,8 @@ class GlobalAttention(nn.Module):
         if memory_lengths is not None:
             mask = utils.sequence_mask(memory_lengths, max_len=align.size(-1))
             mask = mask.unsqueeze(1)
-            align.masked_fill_(1 - mask, -float('inf'))
+            # align.masked_fill_(1 - mask, -float('inf'))
+            align.masked_fill_( ~(mask), -float('inf'))
 
         if use_softmax:
             align_vectors = F.softmax(align.view(src_batch * query_len, src_len), -1)

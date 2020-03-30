@@ -1,8 +1,8 @@
 python main.py --mode=predict \
-    --exp_name=arggen_demo_2 \
+    --exp_name=arggen_exp \
     --encode_passage \
-    --debug \
+    --replace_unk \
     --type_conditional_lm \
     --task=arggen \
-    --batch_size=10 \
-    --load_model_path=epoch_50_train_366.3172_val_371.1416_ppl_9.6510.tar
+    --batch_size=16 \
+    --load_model_path=epoch_30_train_199.6098_val_191.2657_ppl_3.4825.tar

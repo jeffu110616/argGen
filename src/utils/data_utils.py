@@ -1,5 +1,5 @@
 import json
-import tqdm
+from tqdm import tqdm
 import logging
 from utils.misc_utils import DATA_DIR
 
@@ -181,7 +181,7 @@ def _load_arggen_train_data(demo=False):
     `target_retrieved_passages` (list): a list of retrieved passages, which contains sentences and keyphrases
     """
     dataset = dict()
-    dataset["train"] = {"src": {"op": [], "passages": [], "passage_kp": []},
+    dataset["train"] = {"src": {"op": [], "passages": [], "passage_kp": [], "inner": []},
                         "tgt": [],
                         "id": []}
 
@@ -214,6 +214,17 @@ def _load_arggen_train_data(demo=False):
                 cur_passage_kp_set.append(psg["keyphrases"])
             dataset[set_type]["src"]["passages"].append(cur_passage_set)
             dataset[set_type]["src"]["passage_kp"].append(cur_passage_kp_set)
+
+            cur_inner_info = list()
+            for utter in cur_obj["inner"]:
+                innerDict = dict()
+                psg_lst = list()
+                for psg in utter['passages']:
+                    psg_lst.append(psg["sentences"])
+                innerDict['passages'] = psg_lst
+                innerDict['body'] = utter['body']
+                cur_inner_info.append(innerDict)
+            dataset[set_type]["src"]["inner"].append(cur_inner_info)            
 
             if demo and ln_cnt >= 100:
                 break

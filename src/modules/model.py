@@ -3,6 +3,7 @@ import torch.nn as nn
 
 from modules import content_decoder
 from modules import sentence_planner
+from sys import exit
 
 from torch.nn.utils.rnn import pack_padded_sequence as pack
 from torch.nn.utils.rnn import pad_packed_sequence as unpack
@@ -24,7 +25,6 @@ class EncoderRNN(nn.Module):
     def forward(self, input_embedded, input_lengths):
         """forward path, note that inputs are batch first"""
 
-
         lengths_list = input_lengths.view(-1).tolist()
         packed_emb = pack(input_embedded, lengths_list, True)
 
@@ -33,6 +33,30 @@ class EncoderRNN(nn.Module):
 
         return memory_bank, encoder_final
 
+class StcEncoderRNN(nn.Module):
+
+    def __init__(self, opt):
+        super(StcEncoderRNN, self).__init__()
+        self.hidden_size = opt.hidden_size // 2 # use bidirectional RNN
+        self.LSTM = nn.LSTM(input_size=512,
+                            hidden_size=self.hidden_size,
+                            # num_layers=2, # Default: 1
+                            batch_first=True,
+                            # dropout=opt.dropout,
+                            bidirectional=True)
+
+        return
+
+    def forward(self, input_embedded, input_lengths):
+        """forward path, note that inputs are batch first"""
+
+        lengths_list = input_lengths.view(-1).tolist()
+        packed_emb = pack(input_embedded, lengths_list, True)
+
+        memory_bank, encoder_final = self.LSTM(packed_emb)
+        memory_bank = unpack(memory_bank)[0].view(input_embedded.size(0),input_embedded.size(1), -1)
+
+        return memory_bank, encoder_final
 
 class Model(nn.Module):
     def __init__(self, word_emb, vocab_size, opt):
@@ -100,15 +124,26 @@ class ArgGenModel(Model):
         src_emb = self.word_emb(src_inputs_tensor)
         enc_outs, enc_final = self.encoder.forward(input_embedded=src_emb, input_lengths=src_len_tensor)
 
-        self.sp_dec.init_state(enc_final)
-        self.wd_dec.init_state(enc_final)
+        # self.sp_dec.init_state(enc_final)
+        # self.wd_dec.init_state(enc_final)
         return enc_outs, enc_final
 
     def forward(self, tensor_dict, device=None):
 
         batch_size, sent_num, _ = tensor_dict["phrase_bank_selection_index"].size()
-        enc_outs, _ = self.forward_enc(src_inputs_tensor=tensor_dict["src_inputs"],
+
+        enc_outs, enc_final = self.forward_enc(src_inputs_tensor=tensor_dict["src_inputs"],
                          src_len_tensor=tensor_dict["src_lens"])
+        
+        enc_outs_bi = enc_outs.view(enc_outs.size(0), enc_outs.size(1), 2, -1)
+        enc_stc = torch.cat([enc_outs_bi[:, -1, 0], enc_outs_bi[:, 0, 1], -1) # get sentence representation
+
+        # print(enc_outs1.size())
+        # exit()
+
+        self.sp_dec.init_state(enc_final)
+        self.wd_dec.init_state(enc_final)
+
         ph_bank_emb_raw = self.word_emb(tensor_dict["phrase_bank"])
 
         ph_bank_emb = torch.sum(ph_bank_emb_raw, -2)

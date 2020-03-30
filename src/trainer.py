@@ -30,7 +30,7 @@ def train_epoch(model, train_data_sampler, opt, optimizer, device):
         cs_loss = model.compute_content_selection_loss(sp_next_sentence_sel_pred,
                                                        batch["phrase_bank_selection_index_target"],
                                                        batch["phrase_bank_selection_index_mask"])
-        cs_results = (sp_next_sentence_sel_pred > 0.5).cpu().numpy()
+        # cs_results = (sp_next_sentence_sel_pred > 0.5).cpu().numpy()
 
         if not opt.task == "absgen":
             model_loss = wd_loss + opt.loss_gamma * st_loss + opt.loss_eta * cs_loss
@@ -159,7 +159,7 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
             cur_para_preds = sp_results[ix]
             cur_stypes = [k[0].cpu().tolist() for k in cur_para_preds['stype_id']]
             cur_pred_text = [vocab.id2word(wid) for wid in wd_results[ix]["word_preds"]]
-            cur_src_str = batch["src_str"][ix]
+            cur_src_str = batch["src_strs"][ix]
             if opt.replace_unk and (wd_results[ix]["attention"] is not None) and (cur_src_str is not None):
 
 

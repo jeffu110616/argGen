@@ -10,9 +10,9 @@ class WordDecoder(nn.Module):
         super(WordDecoder, self).__init__()
         self.emb_size = 300
         self.task = opt.task
-        self.hidden_size = opt.hidden_size
+        self.hidden_size = opt.hidden_size * 2
         self.LSTM = nn.LSTM(input_size=self.emb_size,
-                            hidden_size=opt.hidden_size,
+                            hidden_size=opt.hidden_size * 2,
                             num_layers=2,
                             dropout=opt.dropout,
                             batch_first=True,
@@ -20,7 +20,7 @@ class WordDecoder(nn.Module):
 
         if opt.task == "arggen":
             self.stype_n = 4
-            attn_key_dim = 512
+            attn_key_dim = 512 * 2
         elif opt.task == "wikigen":
             self.stype_n = 5
             attn_key_dim = 300
@@ -29,7 +29,7 @@ class WordDecoder(nn.Module):
             self.stype_n = 0
 
         self.pointer_generator = opt.pointer_generator
-        self.readout = nn.Linear(opt.hidden_size, vocab_size, bias=True)
+        self.readout = nn.Linear(opt.hidden_size*2, vocab_size, bias=True)
         self.word_transformation = nn.Linear(self.emb_size, self.emb_size, bias=True)
         self.planner_transformation = nn.Linear(self.hidden_size, self.emb_size, bias=True)
         self.enc_attn = attention.GlobalAttention(query_dim=self.hidden_size,
