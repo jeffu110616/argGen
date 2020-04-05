@@ -6,7 +6,7 @@ class SentencePlanner(nn.Module):
     def __init__(self, opt):
 
         super(SentencePlanner, self).__init__()
-        self.hidden_size = opt.hidden_size * 2
+        self.hidden_size = opt.hidden_size
         self.batch_size = opt.batch_size
 
         planner_hidden_size = 300

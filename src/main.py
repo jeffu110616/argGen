@@ -248,7 +248,6 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
 
-
     model = TASK_CONFIG[opt.task][0](word_emb=word_emb, vocab_size=len(vocab), opt=opt).to(device)
 
     if opt.mode == "train":
