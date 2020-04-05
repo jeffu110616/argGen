@@ -19,9 +19,9 @@ setup_configs = {
     "system": {"src": ["op", "op_psg_kp", "op_psg"], "tgt": ["rr"]},
 }
 
-DATA_DIR = "data/"
-EXP_DIR = "exp/"
-WEMB_DIR = "wemb/glove.6B.300d.txt"
+DATA_DIR = "/nfs/nas-7.1/cflin/data/emnlp19/"
+EXP_DIR = "/nfs/nas-7.1/cflin/exp/"
+WEMB_DIR = "/nfs/nas-7.1/cflin/wordEM/glove.6B/glove.6B.300d.txt"
 
 PRETRAINED_ENCODER_PATH = DATA_DIR + "pretrained_encoder_weights.tar"
 PRETRAINED_DECODER_PATH = DATA_DIR + "pretrained_decoder_weights.tar"
