@@ -1,5 +1,5 @@
 python main.py --mode=train \
-		--exp_name=arggen_ours_mt \
+		--exp_name=arggen_mt_20 \
 	        --encode_passage \
 		--type_conditional_lm \
 		--task=arggen \
