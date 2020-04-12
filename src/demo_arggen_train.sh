@@ -1,5 +1,5 @@
 python3 main.py --mode=train \
-    --exp_name=arggen_demo_2 \
+    --exp_name=arggen_20 \
     --encode_passage \
     --type_conditional_lm \
     --debug \

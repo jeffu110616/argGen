@@ -4,7 +4,7 @@ import logging
 import json
 import numpy as np
 import torch
-import tqdm
+from tqdm import tqdm
 import torch.nn as nn
 
 from modules.decoding import infer_batch
@@ -63,7 +63,7 @@ def valid_epoch(model, dev_data_sampler, opt, device):
     cs_pred = []
     cs_truth = []
 
-    for batch in tqdm.tqdm(dev_data_sampler):
+    for batch in tqdm(dev_data_sampler):
 
         model.zero_grad()
         sp_type_pred_logits, sp_next_sentence_sel_pred, wd_readouts, enc_attn, _, _ = model(batch, device)

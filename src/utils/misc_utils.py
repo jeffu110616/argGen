@@ -19,7 +19,7 @@ setup_configs = {
     "system": {"src": ["op", "op_psg_kp", "op_psg"], "tgt": ["rr"]},
 }
 
-DATA_DIR = "/nfs/nas-7.1/cflin/data/emnlp19/"
+DATA_DIR = "/nfs/nas-7.1/cflin/data/inputs/"
 EXP_DIR = "/nfs/nas-7.1/cflin/exp/"
 WEMB_DIR = "/nfs/nas-7.1/cflin/wordEM/glove.6B/glove.6B.300d.txt"
 

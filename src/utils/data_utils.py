@@ -1,5 +1,5 @@
 import json
-import tqdm
+from tqdm import tqdm
 import logging
 from utils.misc_utils import DATA_DIR
 
@@ -197,7 +197,7 @@ def _load_arggen_train_data(demo=False):
             raw_lns = open(DATA_DIR + "arggen/train.jsonl").readlines()
             raw_lns = raw_lns[:10]
         else:
-            raw_lns = open(DATA_DIR + "arggen/%s.jsonl" % set_type).readlines()
+            raw_lns = open(DATA_DIR + "mt_arggen_20/%s.jsonl" % set_type).readlines()
 
         for ln in tqdm(raw_lns):
             cur_obj = json.loads(ln)
