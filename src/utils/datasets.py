@@ -200,7 +200,8 @@ class ArgDataset(Dataset):
     def load_test_data(self, raw_data, opt, vocab):
         self.load_source(raw_data, opt=opt, vocab=vocab)
         self.load_phrase_bank(raw_data, opt=opt, vocab=vocab)
-        self.tids = raw_data["id"]
+        # self.tids = raw_data["id"]
+        self.tids = raw_data["targetId"]
 
 
 

@@ -151,7 +151,7 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
     eos_symbols = [".", "!", "?", "???", "!!!", "..."]
     eos_wids = [vocab.word2id(eos) for eos in eos_symbols if eos in vocab._word2id]
 
-    for batch in tqdm.tqdm(data_sampler):
+    for batch in tqdm(data_sampler):
 
         sp_results, wd_results = infer_batch(model, batch, opt, eos_wids)
 
@@ -159,7 +159,7 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
             cur_para_preds = sp_results[ix]
             cur_stypes = [k[0].cpu().tolist() for k in cur_para_preds['stype_id']]
             cur_pred_text = [vocab.id2word(wid) for wid in wd_results[ix]["word_preds"]]
-            cur_src_str = batch["src_str"][ix]
+            cur_src_str = batch["src_strs"][ix]
             if opt.replace_unk and (wd_results[ix]["attention"] is not None) and (cur_src_str is not None):
 
 
