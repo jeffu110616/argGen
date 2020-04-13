@@ -28,7 +28,7 @@ def _load_arggen_test_data(demo=False):
     Load test data for argument generation task.
     """
     path = DATA_DIR + "mt_arggen_20/test.jsonl"
-    dataset = {"op": [], "passages": [], "inners": [], "passage_kp": [], "id": []}
+    dataset = {"op": [], "passages": [], "inners": [], "passage_kp": [], "id": [], "targetId": []}
 
     logging.info("Loading test data for arggen...")
     raw_lns = open(path).readlines()
@@ -39,6 +39,7 @@ def _load_arggen_test_data(demo=False):
         cur_obj = json.loads(ln)
         dataset["op"].append(cur_obj["op"])
         dataset["id"].append(cur_obj["id"])
+        dataset["targetId"].append(cur_obj["targetId"])
         cur_passage_sent_lst = []
         cur_passage_kp_set = set()
 
