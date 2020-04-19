@@ -75,6 +75,8 @@ class Model(nn.Module):
 
     def compute_word_loss_probs(self, word_prob, word_targets):
         """
+        self.nll_loss = nn.NLLLoss(reduction="sum", ignore_index=-1)
+
         Calculate cross-entropy loss on words.
         Args:
             word_prob: [batch_size, ]
