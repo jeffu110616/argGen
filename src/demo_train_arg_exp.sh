@@ -4,9 +4,9 @@ python main.py --mode=train \
 		--type_conditional_lm \
 		--task=arggen \
 		--batch_size=20 \
-		--num_train_epochs=100 \
+		--num_train_epochs=500 \
 		--logging_freq=2 \
-        --max_src_words=300 \
+        --max_src_words=500 \
         --max_passage_words=200 \
 		--max_sent_num=10 \
 		--max_bank_size=70 
