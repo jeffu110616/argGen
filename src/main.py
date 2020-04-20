@@ -125,7 +125,7 @@ def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
     train_data_sampler = DataSampler(dataset=train_data, sequential=False, opt=opt, device=device)
 
     dev_data = TASK_CONFIG[opt.task][1](set_type="dev")
-    dev_data.load_data(raw_data=train_dev_data_raw["train"], opt=opt, vocab=vocab)
+    dev_data.load_data(raw_data=train_dev_data_raw["dev"], opt=opt, vocab=vocab)
     dev_data_sampler = DataSampler(dataset=dev_data, sequential=True, opt=opt, device=device)
 
     model.eval()
