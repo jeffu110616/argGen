@@ -12,6 +12,7 @@ import torch
 import torch.nn as nn
 from tensorboardX import SummaryWriter
 from torch import optim
+from pathlib import Path
 
 import utils.misc_utils as misc_utils
 import utils.data_utils as data_utils
@@ -224,8 +225,10 @@ def run_inference(model, test_data_raw, vocab, opt, device):
                                     device=device)
 
     # store examples
-    fout_log = open("infer_logs/%s_output.jsonlist" \
-                        % (opt.test_output_name), "w")
+    infer_path = "%s/infer_logs" \
+                        % (misc_utils.EXP_DIR + opt.exp_name)
+    Path(infer_path).mkdir(parents=True, exist_ok=True)
+    fout_log = open(infer_path + "/output.jsonlist", "w")
 
     with torch.no_grad():
         model.eval()
@@ -245,7 +248,7 @@ def main():
 
     logging.info("Building generation model...")
 
-    os.environ['CUDA_VISIBLE_DEVICES']='1'
+    # os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
 
