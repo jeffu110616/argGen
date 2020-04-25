@@ -121,10 +121,19 @@ class ArgGenModel(Model):
     def __init__(self, word_emb, vocab_size, opt):
         super(ArgGenModel, self).__init__(word_emb, vocab_size, opt)
         self.encoder = EncoderRNN(opt)
+        self.innerEncoder = EncoderRNN(opt)
 
     def forward_enc(self, src_inputs_tensor, src_len_tensor):
         src_emb = self.word_emb(src_inputs_tensor)
         enc_outs, enc_final = self.encoder.forward(input_embedded=src_emb, input_lengths=src_len_tensor)
+
+        # self.sp_dec.init_state(enc_final)
+        # self.wd_dec.init_state(enc_final)
+        return enc_outs, enc_final
+
+    def forward_inner_enc(self, src_inputs_tensor, src_len_tensor):
+        src_emb = self.word_emb(src_inputs_tensor)
+        enc_outs, enc_final = self.innerEncoder.forward(input_embedded=src_emb, input_lengths=src_len_tensor)
 
         # self.sp_dec.init_state(enc_final)
         # self.wd_dec.init_state(enc_final)
@@ -140,7 +149,7 @@ class ArgGenModel(Model):
         # Needed to sort manually
         _, sorted_indice = torch.sort(tensor_dict["src_inner_lens"], descending=True)
         _, inv_sorted_indice = torch.sort(sorted_indice, descending=False)
-        enc_outs_inner, enc_final_inner = self.forward_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"][sorted_indice],
+        enc_outs_inner, enc_final_inner = self.forward_inner_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"][sorted_indice],
                          src_len_tensor=tensor_dict["src_inner_lens"][sorted_indice])
         # print(enc_outs_op.size())
         enc_outs_inner = enc_outs_inner[inv_sorted_indice]

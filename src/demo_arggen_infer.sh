@@ -5,4 +5,4 @@ python main.py --mode=predict \
     --type_conditional_lm \
     --task=arggen \
     --batch_size=20 \
-    --load_model_path=epoch_12_train_191.1234_val_217.6253_ppl_5.5265.tar
+    --load_model_path=epoch_9_train_196.4453_val_217.6898_ppl_6.2191.tar
