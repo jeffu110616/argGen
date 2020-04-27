@@ -3,7 +3,7 @@ python main.py --mode=train \
 	    --encode_passage \
 		--type_conditional_lm \
 		--task=arggen \
-		--batch_size=20 \
+		--batch_size=48 \
 		--num_train_epochs=500 \
 		--logging_freq=2 \
         --max_src_words=500 \
