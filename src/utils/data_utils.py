@@ -3,9 +3,9 @@ from tqdm import tqdm
 import logging
 from utils.misc_utils import DATA_DIR
 
-def load_test_data(task="arggen", demo=False):
+def load_test_data(task="arggen", demo=False, opt=None):
     if task == "arggen":
-        return _load_arggen_test_data(demo=demo)
+        return _load_arggen_test_data(demo=demo, opt=opt)
     elif task == "wikigen":
         return _load_wikigen_test_data(demo=demo)
     else:
@@ -23,7 +23,7 @@ def load_train_data(demo=False, task=None):
         raise ValueError("Specified task {} does not exist!".format(task))
 
 
-def _load_arggen_test_data(demo=False):
+def _load_arggen_test_data(demo=False, opt=None):
     """
     Load test data for argument generation task.
     """
@@ -34,6 +34,15 @@ def _load_arggen_test_data(demo=False):
     raw_lns = open(path).readlines()
     if demo:
         raw_lns = raw_lns[:100]
+
+    if opt.infer_fold != -1 and opt.infer_fold_selected != -1:
+        assert(opt.infer_fold_selected > 0 and opt.infer_fold_selected <= opt.infer_fold)
+        sectionLength = (len(raw_lns) // opt.infer_fold)+1
+        startIdx = sectionLength * (opt.infer_fold_selected - 1)
+        endIdx = sectionLength * (opt.infer_fold_selected)
+        endIdx = endIdx if endIdx <= len(raw_lns) else len(raw_lns)
+        raw_lns = raw_lns[startIdx:endIdx]
+        print("Total partition: {}, startIdx: {}, endIdx: {}, {} examples in total.".format(opt.infer_fold, startIdx, endIdx, len(raw_lns)))
 
     for ln in tqdm(raw_lns):
         cur_obj = json.loads(ln)
