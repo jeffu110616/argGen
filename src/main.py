@@ -104,6 +104,12 @@ parser.add_argument("--use_true_kp", action="store_true",
                     help="Whether to use gold-standard KP for planning decoder, "
                          "this corresponds to the oracle setup in the paper.")
 
+parser.add_argument("--infer_fold", type=int, default=-1,
+                    help="Number of partitions when doing inference")
+
+parser.add_argument("--infer_fold_selected", type=int, default=-1,
+                    help="Selected partition to do inference")
+
 opt = parser.parse_args()
 
 
@@ -225,7 +231,10 @@ def run_inference(model, test_data_raw, vocab, opt, device):
     infer_path = "%s/infer_logs" \
                         % (misc_utils.EXP_DIR + opt.exp_name)
     Path(infer_path).mkdir(parents=True, exist_ok=True)
-    fout_log = open(infer_path + "/output.jsonlist", "w")
+    if opt.infer_fold_selected != -1:
+        fout_log = open(infer_path + "/output_{}.jsonlist".format(opt.infer_fold_selected), "w")
+    else:
+        fout_log = open(infer_path + "/output.jsonlist", "w")
 
     with torch.no_grad():
         model.eval()
@@ -242,9 +251,8 @@ def main():
     word_emb = nn.Embedding.from_pretrained(torch.tensor(glove_emb, dtype=torch.float))
 
     logging.info("Building generation model...")
-
+    os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
     model = TASK_CONFIG[opt.task][0](word_emb=word_emb, vocab_size=len(vocab), opt=opt).to(device)
 
@@ -259,7 +267,7 @@ def main():
 
     elif opt.mode == "predict":
         logging.info("Start beam search decoding...")
-        test_data = data_utils.load_test_data(demo=opt.debug, task=opt.task)
+        test_data = data_utils.load_test_data(demo=opt.debug, task=opt.task, opt=opt)
         run_inference(model, test_data, vocab, opt, device)
 
 
