@@ -9,7 +9,7 @@ class SentencePlanner(nn.Module):
         self.hidden_size = opt.hidden_size
         self.batch_size = opt.batch_size
 
-        planner_hidden_size = 300
+        planner_hidden_size = 768
         if opt.task == "arggen":
             self.sentence_type_n = 4
         elif opt.task == "wikigen":
@@ -28,8 +28,8 @@ class SentencePlanner(nn.Module):
                                batch_first=True,
                                bias=True)
 
-        self.keyphrase_reader = nn.LSTM(input_size=300,
-                                        hidden_size=150,
+        self.keyphrase_reader = nn.LSTM(input_size=768,
+                                        hidden_size=768 // 2,
                                         num_layers=1,
                                         batch_first=True,
                                         bias=True,
@@ -43,7 +43,7 @@ class SentencePlanner(nn.Module):
         self.stype_inner = nn.Linear(self.hidden_size + planner_hidden_size, self.hidden_size, bias=True)
         self.stype_readout = nn.Linear(self.hidden_size, self.sentence_type_n, bias=True)
         self.keyphrase_sel_hidden_weights = nn.Linear(self.hidden_size, 1, bias=True)
-        self.bilinear_layer = nn.Linear(300, 300, bias=False)
+        self.bilinear_layer = nn.Linear(768, 768, bias=False)
         return
 
 

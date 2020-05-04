@@ -148,7 +148,7 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
     Run decoding algorithm on a given model.
     """
     start_time = time.time()
-    eos_symbols = [".", "!", "?", "???", "!!!", "..."]
+    eos_symbols = [".", "!", "?", "???", "!!!"]
     eos_wids = [vocab.word2id(eos) for eos in eos_symbols if eos in vocab._word2id]
 
     for batch in tqdm.tqdm(data_sampler):
@@ -165,8 +165,8 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
 
                 unk_free = []
                 for wid, w in enumerate(cur_pred_text):
-                    if w in ["SEP", "EOS", "SOS", "PAD"]: continue
-                    if w == "UNK":
+                    if w in ["<sep>", "</s>", "<s>", "<pad>"]: continue
+                    if w == "<unk>":
                         _, max_index = wd_results[ix]["attention"][0][wid].max(0)
                         replaced = cur_src_str[max_index.item()]
                         unk_free.append(replaced)
@@ -174,7 +174,7 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
                         unk_free.append(w)
                 pred_cleaned = unk_free
             else:
-                pred_cleaned = [w for w in cur_pred_text if not w in ["SEP", "PAD", "SOS", "EOS"]]
+                pred_cleaned = [w for w in cur_pred_text if not w in ["<sep>", "</s>", "<s>", "<pad>"]]
 
             towrite_obj = {"pred": pred_cleaned, "stype": cur_stypes, "tid": batch["tid"][ix]}
             fout.write(json.dumps(towrite_obj) + "\n")

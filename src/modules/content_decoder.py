@@ -8,7 +8,7 @@ class WordDecoder(nn.Module):
 
     def __init__(self, vocab_size, opt):
         super(WordDecoder, self).__init__()
-        self.emb_size = 300
+        self.emb_size = 768
         self.task = opt.task
         self.hidden_size = opt.hidden_size
         self.LSTM = nn.LSTM(input_size=self.emb_size,

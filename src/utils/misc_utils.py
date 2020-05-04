@@ -4,12 +4,8 @@
 import torch
 import logging
 import numpy as np
+from transformers import XLNetTokenizer, XLNetModel
 
-PAD_id = 0
-SOS_id = 1
-SEP_id = 2
-EOS_id = 3
-UNK_id = 4
 PH_PAD_id = 0
 PH_SOS_id = 1
 PH_EOS_id = 2
@@ -27,6 +23,20 @@ WEMB_DIR = "/nfs/nas-7.1/cflin/wordEM/glove.6B/glove.6B.300d.txt"
 PRETRAINED_ENCODER_PATH = DATA_DIR + "pretrained_encoder_weights.tar"
 PRETRAINED_DECODER_PATH = DATA_DIR + "pretrained_decoder_weights.tar"
 
+tokenizer = XLNetTokenizer.from_pretrained('xlnet-base-cased')
+XLNET_VOCAB_SIZE = 32000
+
+# PAD_id = 0
+# SOS_id = 1
+# SEP_id = 2
+# EOS_id = 3
+# UNK_id = 4
+PAD_id = tokenizer.pad_token_id
+SOS_id = tokenizer.bos_token_id
+SEP_id = tokenizer.sep_token_id
+EOS_id = tokenizer.eos_token_id
+UNK_id = tokenizer.unk_token_id
+
 class Vocabulary(object):
     """Vocabulary class"""
 
@@ -35,26 +45,33 @@ class Vocabulary(object):
         self._word2id = dict()
         self._id2word = list()
 
-        for ln in open(DATA_DIR + task + "/vocab.txt"):
-            _, word, freq = ln.strip().split("\t")
-            self._word2id[word] = len(self._word2id)
+        # for ln in open(DATA_DIR + task + "/vocab.txt"):
+        #     _, word, freq = ln.strip().split("\t")
+        #     self._word2id[word] = len(self._word2id)
+        #     self._id2word.append(word)
+
+        #     if len(self._id2word) == 50000:
+        #         break
+
+        for i in range(XLNET_VOCAB_SIZE):
+            word = tokenizer.decode(i)
+            self._word2id[word] = i
             self._id2word.append(word)
 
-            if len(self._id2word) == 50000:
-                break
+        self.bos_token = self._word2id["<s>"]
+        self.unk_token = self._word2id["<unk>"]
+        self.eos_token = self._word2id["</s>"]
+        self.cls_token = self._word2id["<cls>"]
 
-        self.bos_token = self._word2id["SOS"]
-        self.unk_token = self._word2id["UNK"]
-        self.eos_token = self._word2id["EOS"]
-        if "SEP" in self._word2id:
-            self.sep_token = self._word2id["SEP"]
+        if "<sep>" in self._word2id:
+            self.sep_token = self._word2id["<sep>"]
 
-        assert self._word2id["SOS"] == SOS_id
-        assert self._word2id["UNK"] == UNK_id, \
-            "self._word2id['UNK']=%d\tUNK_id=%d" % (self._word2id["UNK"], UNK_id)
-        assert self._word2id["EOS"] == EOS_id
-        assert self._word2id["PAD"] == PAD_id
-        assert self._word2id["SEP"] == SEP_id
+        # assert self._word2id["SOS"] == SOS_id
+        # assert self._word2id["UNK"] == UNK_id, \
+        #     "self._word2id['UNK']=%d\tUNK_id=%d" % (self._word2id["UNK"], UNK_id)
+        # assert self._word2id["EOS"] == EOS_id
+        # assert self._word2id["PAD"] == PAD_id
+        # assert self._word2id["SEP"] == SEP_id
 
     def __len__(self):
         return len(self._id2word)
@@ -68,39 +85,6 @@ class Vocabulary(object):
     def id2word(self, id):
         assert id >= 0 and id < len(self._id2word)
         return self._id2word[id]
-
-
-def encode_title_to_id_lists(title_list, vocab, max_title_words):
-    """
-    Convert title words into word ids for Wikipedia and Abstract dataset.
-    Args:
-        title_list: a list of titles, each title is a list of lowercased string.
-        vocab: vocabulary object to convert word into word ids
-        max_title_words: int. If the length of title is greater than this limit, it will be truncated.
-    Returns:
-        title_inputs: a list of word ids, unpadded.
-        title_lens: a list of int, indicating the length for each title.
-    """
-    title_inputs = []
-    title_lens = []
-    title_words = []
-
-    for title in title_list:
-        wids = []
-        words = []
-        for w in title:
-            wid = vocab.word2id(w)
-            if wid == vocab.unk_token:continue
-            wids.append(wid)
-            words.append(w)
-
-        if len(wids) > max_title_words:
-            wids = wids[:max_title_words]
-            words = words[:max_title_words]
-        title_inputs.append(wids)
-        title_lens.append(len(wids))
-        title_words.append(words)
-    return title_inputs, title_lens, title_words
 
 def encode_ph_sel_to_word_ids(ph_sel_list, ph_bank_list, vocab, max_sent_num, max_ph_bank):
     """
@@ -126,7 +110,7 @@ def encode_ph_sel_to_word_ids(ph_sel_list, ph_bank_list, vocab, max_sent_num, ma
 
     for sample_id, sample in enumerate(ph_sel_list):
         cur_sample_sel = [[[vocab.bos_token]]] # first sentence is always [SOS_token]
-        cur_sample_ph_bank_str = [("BOS",)]
+        cur_sample_ph_bank_str = [("<s>",)]
         cur_sample_ph_bank = [[vocab.bos_token]]
 
         for sent_id, sent in enumerate(sample):
@@ -152,7 +136,7 @@ def encode_ph_sel_to_word_ids(ph_sel_list, ph_bank_list, vocab, max_sent_num, ma
 
         cur_sample_ph_bank.append([vocab.eos_token])
         cur_sample_sel.append([[vocab.eos_token]])
-        cur_sample_ph_bank_str.append(("EOS",))
+        cur_sample_ph_bank_str.append(("</s>",))
 
         ph_bank_ids.append(cur_sample_ph_bank)
         ph_bank_str.append(cur_sample_ph_bank_str)
@@ -310,6 +294,7 @@ def load_prev_checkpoint(model, ckpt_path, optimizer=None):
     model.encoder.load_state_dict(ckpt_loaded["encoder"])
     model.wd_dec.load_state_dict(ckpt_loaded["word_decoder"])
     model.sp_dec.load_state_dict(ckpt_loaded["planning_decoder"])
+    model.xlnetModel.load_state_dict(ckpt_loaded["xlnet_model"])
     if optimizer is not None:
         optimizer.load_state_dict(ckpt_loaded["optimizer"])
     return done_epochs
@@ -377,7 +362,7 @@ def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_pass
             continue
 
         input_ids.append(vocab.sep_token)
-        input_strs.append("[SEP]")
+        input_strs.append("<sep>")
         passage_ids = []
         passage_strs = []
         for psg in passage_set_instance:
@@ -385,7 +370,7 @@ def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_pass
                 passage_ids.extend([vocab.word2id(w) for w in sent])
                 passage_strs.extend([w for w in sent])
             passage_ids.append(vocab.sep_token)
-            passage_strs.append("[SEP]")
+            passage_strs.append("<sep>")
 
         if len(passage_ids) > max_passage_words:
             passage_ids = passage_ids[:max_passage_words]

@@ -17,15 +17,15 @@ from pathlib import Path
 import utils.misc_utils as misc_utils
 import utils.data_utils as data_utils
 from utils.misc_utils import Vocabulary
-from utils.datasets import WikiDataset, ArgDataset, AbsDataset, DataSampler
-from modules.model import WikiGenModel, ArgGenModel, AbsGenModel
+from utils.datasets import ArgDataset, DataSampler
+from modules.model import ArgGenModel
 from trainer import train_epoch, valid_epoch, infer_epoch
 
 
 TASK_CONFIG = {
-    "wikigen": (WikiGenModel, WikiDataset),
+    # "wikigen": (WikiGenModel, WikiDataset),
     "arggen": (ArgGenModel, ArgDataset),
-    "absgen": (AbsGenModel, AbsDataset),
+    # "absgen": (AbsGenModel, AbsDataset),
 }
 
 logging.getLogger().setLevel(logging.INFO)
@@ -174,6 +174,7 @@ def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
                     "encoder": model.encoder.state_dict(),
                     "word_decoder": model.wd_dec.state_dict(),
                     "planning_decoder": model.sp_dec.state_dict(),
+                    "xlnet_model": model.xlnetModel.state_dict(),
                     "optimizer": optimizer.state_dict,
                     "epoch": n_epoch,}
 
@@ -248,18 +249,18 @@ def main():
     # print(torch.cuda.is_available())
     # exit()
 
-    logging.info("Loading vocabulary and embedding...")
-    vocab = Vocabulary(opt.task)
-    glove_emb = misc_utils.load_glove_emb(vocab)
-    word_emb = nn.Embedding.from_pretrained(torch.tensor(glove_emb, dtype=torch.float))
-
+    # logging.info("Loading vocabulary and embedding...")
+    vocab = Vocabulary() # init vocab from xlnet tokenizer
+    # glove_emb = misc_utils.load_glove_emb(vocab)
+    # word_emb = nn.Embedding.from_pretrained(torch.tensor(glove_emb, dtype=torch.float))
+    
     logging.info("Building generation model...")
 
-    os.environ['CUDA_VISIBLE_DEVICES']='1'
+    # os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
 
-    model = TASK_CONFIG[opt.task][0](word_emb=word_emb, vocab_size=len(vocab), opt=opt).to(device)
+    model = TASK_CONFIG[opt.task][0](opt=opt).to(device)
 
     if opt.mode == "train":
 
