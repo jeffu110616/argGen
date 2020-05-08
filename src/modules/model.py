@@ -33,31 +33,6 @@ class EncoderRNN(nn.Module):
 
         return memory_bank, encoder_final
 
-class StcEncoderRNN(nn.Module):
-
-    def __init__(self, opt):
-        super(StcEncoderRNN, self).__init__()
-        self.hidden_size = opt.hidden_size // 2 # use bidirectional RNN
-        self.LSTM = nn.LSTM(input_size=512,
-                            hidden_size=self.hidden_size,
-                            # num_layers=2, # Default: 1
-                            batch_first=True,
-                            # dropout=opt.dropout,
-                            bidirectional=True)
-
-        return
-
-    def forward(self, input_embedded, input_lengths):
-        """forward path, note that inputs are batch first"""
-
-        lengths_list = input_lengths.view(-1).tolist()
-        packed_emb = pack(input_embedded, lengths_list, True)
-
-        memory_bank, encoder_final = self.LSTM(packed_emb)
-        memory_bank = unpack(memory_bank)[0].view(input_embedded.size(0),input_embedded.size(1), -1)
-
-        return memory_bank, encoder_final
-
 class Model(nn.Module):
     def __init__(self, word_emb, vocab_size, opt):
         super(Model, self).__init__()
