@@ -1,10 +1,10 @@
 python main.py --mode=train \
-		--exp_name=arggen_mt_20 \
+		--exp_name=arggen_mt_20_test \
 	        --encode_passage \
 		--type_conditional_lm \
 		--task=arggen \
 		--batch_size=20 \
-		--num_train_epochs=500 \
+		--num_train_epochs=50 \
 		--logging_freq=2 \
     	--max_src_words=500 \
 	    --max_passage_words=200 \

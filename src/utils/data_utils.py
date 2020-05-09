@@ -1,5 +1,6 @@
 import json
 from tqdm import tqdm
+from sys import exit
 import logging
 from utils.misc_utils import DATA_DIR
 
@@ -27,8 +28,8 @@ def _load_arggen_test_data(demo=False, opt=None):
     """
     Load test data for argument generation task.
     """
-    path = DATA_DIR + "mt_arggen_20/test.jsonl"
-    dataset = {"op": [], "passages": [], "inners": [], "passage_kp": [], "id": [], "targetId": []}
+    path = DATA_DIR + "mt_arggen_20/test.jsonl.op"
+    dataset = {"op": [], "passages": [], "inners": [], "speaker": [], "passage_kp": [], "id": [], "targetId": []}
 
     logging.info("Loading test data for arggen...")
     raw_lns = open(path).readlines()
@@ -62,10 +63,13 @@ def _load_arggen_test_data(demo=False, opt=None):
         dataset["passage_kp"].append(cur_passage_kp_set)
 
         cur_inner_set = list()
+        cur_inner_speaker = list()
         for utter in cur_obj['inners']:
-            cur_inner_set.append(utter)
+            cur_inner_set.append(utter['body'])
+            cur_inner_speaker.append(utter['isOP'])
         dataset["inners"].append(cur_inner_set)
-
+        dataset["speaker"].append(cur_inner_speaker)
+        
     logging.info("Arggen test data loaded. %d samples in total." % (len(dataset["id"])))
     return dataset
 
@@ -196,11 +200,11 @@ def _load_arggen_train_data(demo=False):
     `target_retrieved_passages` (list): a list of retrieved passages, which contains sentences and keyphrases
     """
     dataset = dict()
-    dataset["train"] = {"src": {"op": [], "passages": [], "passage_kp": [], "inners": []},
+    dataset["train"] = {"src": {"op": [], "passages": [], "speaker": [], "passage_kp": [], "inners": []},
                         "tgt": [],
                         "id": []}
 
-    dataset["dev"] = {"src": {"op": [], "passages": [], "passage_kp": [], "inners": []},
+    dataset["dev"] = {"src": {"op": [], "passages": [], "speaker": [], "passage_kp": [], "inners": []},
                       "tgt": [],
                       "id": []}
 
@@ -214,7 +218,7 @@ def _load_arggen_train_data(demo=False):
             raw_lns = raw_lns[:10]
         else:
             # raw_lns = open(DATA_DIR + "arggen/%s.jsonl" % set_type).readlines()
-            raw_lns = open(DATA_DIR + "mt_arggen_20/%s.jsonl" % set_type).readlines()
+            raw_lns = open(DATA_DIR + "mt_arggen_20/%s.jsonl.op" % set_type).readlines()
 
         for ln in tqdm(raw_lns):
             cur_obj = json.loads(ln)
@@ -233,9 +237,12 @@ def _load_arggen_train_data(demo=False):
             dataset[set_type]["src"]["passage_kp"].append(cur_passage_kp_set)
   
             cur_inner_set = list()
+            cur_inner_speaker = list()
             for utter in cur_obj['inners']:
-                cur_inner_set.append(utter)
+                cur_inner_set.append([utter['body']])
+                cur_inner_speaker.append(utter['isOP'])
             dataset[set_type]["src"]["inners"].append(cur_inner_set)
+            dataset[set_type]["src"]["speaker"].append(cur_inner_speaker)
 
             if demo and ln_cnt >= 100:
                 break

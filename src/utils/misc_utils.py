@@ -3,6 +3,7 @@
 
 import torch
 import logging
+from sys import exit
 import numpy as np
 
 PAD_id = 0
@@ -344,7 +345,7 @@ def load_glove_emb(vocab):
 
 
 
-def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_passage_words, encode_passage):
+def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_passage_words, encode_passage, encode_speaker=False):
     """ Convert source input into word ids, when passage is provided, append to the OP.
 
     Args:
@@ -393,6 +394,13 @@ def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_pass
 
         input_ids = input_ids + passage_ids
         input_strs = input_strs + passage_strs
+        
+        # if encode_speaker:
+        #     print(input_ids)
+        #     print('======================================')
+        #     print(input_strs)
+        #     exit()
+
         assert len(input_ids) == len(input_strs)
         src_inputs.append(input_ids)
         src_lens.append(len(input_ids))

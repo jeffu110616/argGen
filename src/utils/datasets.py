@@ -162,7 +162,8 @@ class ArgDataset(Dataset):
                                                                        vocab=vocab,
                                                                        max_op_words=opt.max_src_words,
                                                                        max_passage_words=opt.max_passage_words,
-                                                                       encode_passage=opt.encode_passage)
+                                                                       encode_passage=opt.encode_passage,
+                                                                       encode_speaker=True)
 
         self.size = len(self.src_lens)
         
