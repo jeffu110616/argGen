@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import glob
+from sys import exit
 
 import torch
 import torch.nn as nn
@@ -251,7 +252,7 @@ def main():
     word_emb = nn.Embedding.from_pretrained(torch.tensor(glove_emb, dtype=torch.float))
 
     logging.info("Building generation model...")
-    os.environ['CUDA_VISIBLE_DEVICES']='1'
+#    os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = TASK_CONFIG[opt.task][0](word_emb=word_emb, vocab_size=len(vocab), opt=opt).to(device)
