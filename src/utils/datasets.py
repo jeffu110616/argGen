@@ -339,7 +339,8 @@ class DataSampler(object):
         batch_data = {k: [] for k in self.dataset[0]}
 
         # need to sort idx by source length because of RNN packing constraint
-        cur_indices = [(idx, self.dataset[idx]["src_lens"]) for idx in self.indices[self.start_idx: end_idx]]
+        # cur_indices = [(idx, self.dataset[idx]["src_lens"]) for idx in self.indices[self.start_idx: end_idx]]
+        cur_indices = [(idx, self.dataset[idx]["src_inner_lens"]) for idx in self.indices[self.start_idx: end_idx]]
         sorted_indices = sorted(cur_indices, key=lambda x: x[1], reverse=True)
 
         for idx, _ in sorted_indices:

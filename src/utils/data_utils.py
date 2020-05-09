@@ -231,7 +231,8 @@ def _load_arggen_train_data(demo=False):
             cur_passage_set = list()
             cur_passage_kp_set = list()
             for psg in cur_obj["target_retrieved_passages"]:
-                cur_passage_set.append(psg["sentences"])
+                # cur_passage_set.append(psg["sentences"])
+                cur_passage_set.append([])
                 cur_passage_kp_set.append(psg["keyphrases"])
             dataset[set_type]["src"]["passages"].append(cur_passage_set)
             dataset[set_type]["src"]["passage_kp"].append(cur_passage_kp_set)

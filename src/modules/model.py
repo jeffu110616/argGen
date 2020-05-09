@@ -109,29 +109,29 @@ class ArgGenModel(Model):
 
         batch_size, sent_num, _ = tensor_dict["phrase_bank_selection_index"].size()
 
-        enc_outs_op, enc_final_op = self.forward_enc(src_inputs_tensor=tensor_dict["src_inputs"],
-                         src_len_tensor=tensor_dict["src_lens"])
+        enc_outs, enc_final = self.forward_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"],
+                         src_len_tensor=tensor_dict["src_inner_lens"])
 
-        # Needed to sort manually
-        _, sorted_indice = torch.sort(tensor_dict["src_inner_lens"], descending=True)
-        _, inv_sorted_indice = torch.sort(sorted_indice, descending=False)
-        enc_outs_inner, enc_final_inner = self.forward_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"][sorted_indice],
-                         src_len_tensor=tensor_dict["src_inner_lens"][sorted_indice])
-        # print(enc_outs_op.size())
-        enc_outs_inner = enc_outs_inner[inv_sorted_indice]
-        # print(enc_outs_inner.size())
+        # # Needed to sort manually
+        # _, sorted_indice = torch.sort(tensor_dict["src_inner_lens"], descending=True)
+        # _, inv_sorted_indice = torch.sort(sorted_indice, descending=False)
+        # enc_outs_inner, enc_final_inner = self.forward_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"][sorted_indice],
+        #                  src_len_tensor=tensor_dict["src_inner_lens"][sorted_indice])
+        # # print(enc_outs_op.size())
+        # enc_outs_inner = enc_outs_inner[inv_sorted_indice]
+        # # print(enc_outs_inner.size())
 
-        enc_outs_inner_bi = enc_outs_inner.view(enc_outs_inner.size(0), enc_outs_inner.size(1), 2, -1)
-        # print(enc_outs_inner_bi.size())
+        # enc_outs_inner_bi = enc_outs_inner.view(enc_outs_inner.size(0), enc_outs_inner.size(1), 2, -1)
+        # # print(enc_outs_inner_bi.size())
 
-        enc_outs_inner_last = torch.cat( [enc_outs_inner_bi[:, -1, 0], enc_outs_inner_bi[:, 0, 1]], -1 ).view(batch_size, 1, -1)
-        # print(enc_outs_inner_last.size())
+        # enc_outs_inner_last = torch.cat( [enc_outs_inner_bi[:, -1, 0], enc_outs_inner_bi[:, 0, 1]], -1 ).view(batch_size, 1, -1)
+        # # print(enc_outs_inner_last.size())
 
-        enc_outs_inner_last = enc_outs_inner_last.repeat_interleave(enc_outs_op.size(1), 1)
-        enc_outs = torch.cat([enc_outs_op, enc_outs_inner_last], -1)
+        # enc_outs_inner_last = enc_outs_inner_last.repeat_interleave(enc_outs_op.size(1), 1)
+        # enc_outs = torch.cat([enc_outs_op, enc_outs_inner_last], -1)
 
-        self.sp_dec.init_state(enc_final_op)
-        self.wd_dec.init_state(enc_final_op)
+        self.sp_dec.init_state(enc_final)
+        self.wd_dec.init_state(enc_final)
 
         ph_bank_emb_raw = self.word_emb(tensor_dict["phrase_bank"])
 

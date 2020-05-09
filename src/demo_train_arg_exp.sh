@@ -1,9 +1,9 @@
 python main.py --mode=train \
-		--exp_name=arggen_mt_20_test \
-	        --encode_passage \
+		--exp_name=arggen_mt_20_noEncMulti \
+	    --encode_passage \
 		--type_conditional_lm \
 		--task=arggen \
-		--batch_size=20 \
+		--batch_size=32 \
 		--num_train_epochs=50 \
 		--logging_freq=2 \
     	--max_src_words=500 \
