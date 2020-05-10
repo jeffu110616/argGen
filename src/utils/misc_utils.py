@@ -311,6 +311,7 @@ def load_prev_checkpoint(model, ckpt_path, optimizer=None):
     model.encoder.load_state_dict(ckpt_loaded["encoder"])
     model.wd_dec.load_state_dict(ckpt_loaded["word_decoder"])
     model.sp_dec.load_state_dict(ckpt_loaded["planning_decoder"])
+    model.speaker_emb.load_state_dict(ckpt_loaded["speaker_embedding"])
     if optimizer is not None:
         optimizer.load_state_dict(ckpt_loaded["optimizer"])
     return done_epochs
@@ -345,7 +346,7 @@ def load_glove_emb(vocab):
 
 
 
-def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_passage_words, encode_passage, encode_speaker=False):
+def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_passage_words, encode_passage, speaker_list=None):
     """ Convert source input into word ids, when passage is provided, append to the OP.
 
     Args:
@@ -362,51 +363,74 @@ def encode_text_to_id_lists(op_list, passage_list, vocab, max_op_words, max_pass
 
     src_inputs = []
     src_lens = []
+    src_spks = []
     src_strs = []
+    idx = 0
 
     for op_instance, passage_set_instance in zip(op_list, passage_list):
         input_ids = [vocab.word2id(w) for w in op_instance]
         input_strs = [w for w in op_instance]
+        input_spks = []
+
+        if speaker_list:
+            spk_instance = speaker_list[idx]
+            input_spks = [1 for _ in op_instance]
+        
         if len(input_ids) > max_op_words:
             input_ids = input_ids[:max_op_words]
             input_strs = input_strs[:max_op_words]
+            input_spks = input_spks[:max_op_words]
 
         if not encode_passage:
             src_inputs.append(input_ids)
             src_lens.append(len(input_ids))
             src_strs.append(input_strs)
+            src_spks.append(input_spks)
             continue
 
         input_ids.append(vocab.sep_token)
         input_strs.append("[SEP]")
+        input_spks.append(0)
         passage_ids = []
         passage_strs = []
-        for psg in passage_set_instance:
+        passage_spks = []
+
+        for i, psg in enumerate(passage_set_instance):
             for sent in psg:
                 passage_ids.extend([vocab.word2id(w) for w in sent])
                 passage_strs.extend([w for w in sent])
+                passage_spks.extend([1 if spk_instance[i]==1 else 2 for w in sent ])
             passage_ids.append(vocab.sep_token)
             passage_strs.append("[SEP]")
+            passage_spks.append(0)
 
         if len(passage_ids) > max_passage_words:
             passage_ids = passage_ids[:max_passage_words]
             passage_strs = passage_strs[:max_passage_words]
+            passage_spks = passage_spks[:max_passage_words]
 
         input_ids = input_ids + passage_ids
         input_strs = input_strs + passage_strs
-        
-        # if encode_speaker:
+        input_spks = input_spks + passage_spks
+
+        assert len(input_ids) == len(input_strs)
+        assert len(input_ids) == len(input_spks)
+
+        # if speaker_list:
         #     print(input_ids)
         #     print('======================================')
         #     print(input_strs)
+        #     print('======================================')
+        #     print(input_spks)
         #     exit()
 
-        assert len(input_ids) == len(input_strs)
         src_inputs.append(input_ids)
         src_lens.append(len(input_ids))
         src_strs.append(input_strs)
+        src_spks.append(input_spks)
+        idx += 1
 
-    return src_inputs, src_lens, src_strs
+    return src_inputs, src_lens, src_strs, src_spks
 
 def encode_phrase_sel_to_word_ids(target_list, vocab, max_phrase_in_sentence, max_rr_sent_num):
     """Encode sentence level phrase selection into word ids and phrase bank.

@@ -150,20 +150,13 @@ class ArgDataset(Dataset):
 
     def load_source(self, raw_data_src, opt, vocab):
         """Load OP and passages."""
-        self.src_inputs, self.src_lens, self.src_strs = utils.encode_text_to_id_lists(op_list=raw_data_src["op"],
-                                                                       passage_list=raw_data_src["passages"],
-                                                                       vocab=vocab,
-                                                                       max_op_words=opt.max_src_words,
-                                                                       max_passage_words=opt.max_passage_words,
-                                                                       encode_passage=opt.encode_passage)
-        
-        self.src_inner_inputs, self.src_inner_lens, self.src_inner_strs = utils.encode_text_to_id_lists(op_list=raw_data_src["op"],
+        self.src_inputs, self.src_lens, self.src_strs, self.src_spks = utils.encode_text_to_id_lists(op_list=raw_data_src["op"],
                                                                        passage_list=raw_data_src["inners"],
                                                                        vocab=vocab,
                                                                        max_op_words=opt.max_src_words,
                                                                        max_passage_words=opt.max_passage_words,
                                                                        encode_passage=opt.encode_passage,
-                                                                       encode_speaker=True)
+                                                                       speaker_list=raw_data_src["speaker"])
 
         self.size = len(self.src_lens)
         
@@ -197,8 +190,7 @@ class ArgDataset(Dataset):
         # check size information
         assert len(self.src_inputs) == self.size
         assert len(self.src_lens) == self.size
-        assert len(self.src_inner_inputs) == self.size
-        assert len(self.src_inner_lens) == self.size
+        assert len(self.src_spks) == self.size
         assert len(self.tgt_word_ids_input) == self.size
         assert len(self.tgt_sent_ids) == self.size
         assert len(self.tgt_sent_type) == self.size
@@ -218,8 +210,7 @@ class ArgDataset(Dataset):
         if self.set_type in ["train", "dev"]:
             return {"src_inputs": self.src_inputs[index],
                     "src_lens": self.src_lens[index],
-                    "src_inner_inputs": self.src_inner_inputs[index],
-                    "src_inner_lens": self.src_inner_lens[index],
+                    "src_spks": self.src_spks[index],
                     "tgt_word_ids_input": self.tgt_word_ids_input[index],
                     "tgt_word_ids_output": self.tgt_word_ids_output[index],
                     "tgt_sent_ids": self.tgt_sent_ids[index],
@@ -230,6 +221,7 @@ class ArgDataset(Dataset):
                     "phrase_bank_selection_index": self.phrase_bank_selection_index[index]}
         else:
             return {"src_inputs": self.src_inputs[index],
+                    "src_spks": self.src_spks[index],
                     "src_lens": self.src_lens[index],
                     "src_inner_inputs": self.src_inner_inputs[index],
                     "src_inner_lens": self.src_inner_lens[index],
@@ -353,7 +345,7 @@ class DataSampler(object):
         for k, v in batch_data.items():
 
             # currently the dimensionality check is by hand
-            if k in ["src_inputs", "src_inner_inputs", "tgt_word_ids_input", "tgt_word_ids_output", "tgt_sent_ids"]:
+            if k in ["src_inputs", "src_spks", "src_inner_inputs", "tgt_word_ids_input", "tgt_word_ids_output", "tgt_sent_ids"]:
                 padded, mask = utils.pad_2d_sequence(v)
 
             elif k in ["phrase_bank"]:

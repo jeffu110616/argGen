@@ -90,31 +90,19 @@ class Model(nn.Module):
         cs_loss = torch.sum(cs_loss_masked) / torch.sum(ph_bank_mask)
         return cs_loss
 
-class InputEmbedding(nn.Module):
-    def __init__(self, word_emb, opt):
-        super(InputEmbedding, self).__init__()
-        self.word_emb = word_emb
+class ArgGenModel(Model):
+
+    def __init__(self, word_emb, vocab_size, opt):
+        super(ArgGenModel, self).__init__(word_emb, vocab_size, opt)
         self.speaker_emb = nn.Embedding(
             num_embeddings=3, # 0: MASK, 1: Original poster, 2: Others
             embedding_dim=300,
             padding_idx=0,
         )
-        return
-
-    def forward(self, input_ids, input_ops):
-        wordEmbbed = self.word_emb(input_ids)
-        speakerEmbbed = self.speaker_emb(input_ops)
-        return (wordEmbbed + speakerEmbbed)
-
-class ArgGenModel(Model):
-
-    def __init__(self, word_emb, vocab_size, opt):
-        super(ArgGenModel, self).__init__(word_emb, vocab_size, opt)
-
         self.encoder = EncoderRNN(opt)
 
-    def forward_enc(self, src_inputs_tensor, src_len_tensor):
-        src_emb = self.word_emb(src_inputs_tensor)
+    def forward_enc(self, src_inputs_tensor, src_len_tensor, src_input_spk):
+        src_emb = self.word_emb(src_inputs_tensor) + self.speaker_emb(src_input_spk)
         enc_outs, enc_final = self.encoder.forward(input_embedded=src_emb, input_lengths=src_len_tensor)
 
         # self.sp_dec.init_state(enc_final)
@@ -125,29 +113,30 @@ class ArgGenModel(Model):
 
         batch_size, sent_num, _ = tensor_dict["phrase_bank_selection_index"].size()
 
-        enc_outs_op, enc_final_op = self.forward_enc(src_inputs_tensor=tensor_dict["src_inputs"],
-                         src_len_tensor=tensor_dict["src_lens"])
+        enc_outs, enc_final = self.forward_enc(src_inputs_tensor=tensor_dict["src_inputs"],
+                         src_len_tensor=tensor_dict["src_lens"],
+                         src_input_spk=tensor_dict["src_spks"])
 
-        # Needed to sort manually
-        _, sorted_indice = torch.sort(tensor_dict["src_inner_lens"], descending=True)
-        _, inv_sorted_indice = torch.sort(sorted_indice, descending=False)
-        enc_outs_inner, enc_final_inner = self.forward_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"][sorted_indice],
-                         src_len_tensor=tensor_dict["src_inner_lens"][sorted_indice])
-        # print(enc_outs_op.size())
-        enc_outs_inner = enc_outs_inner[inv_sorted_indice]
-        # print(enc_outs_inner.size())
+        # # Needed to sort manually
+        # _, sorted_indice = torch.sort(tensor_dict["src_inner_lens"], descending=True)
+        # _, inv_sorted_indice = torch.sort(sorted_indice, descending=False)
+        # enc_outs_inner, enc_final_inner = self.forward_enc(src_inputs_tensor=tensor_dict["src_inner_inputs"][sorted_indice],
+        #                  src_len_tensor=tensor_dict["src_inner_lens"][sorted_indice])
+        # # print(enc_outs_op.size())
+        # enc_outs_inner = enc_outs_inner[inv_sorted_indice]
+        # # print(enc_outs_inner.size())
 
-        enc_outs_inner_bi = enc_outs_inner.view(enc_outs_inner.size(0), enc_outs_inner.size(1), 2, -1)
-        # print(enc_outs_inner_bi.size())
+        # enc_outs_inner_bi = enc_outs_inner.view(enc_outs_inner.size(0), enc_outs_inner.size(1), 2, -1)
+        # # print(enc_outs_inner_bi.size())
 
-        enc_outs_inner_last = torch.cat( [enc_outs_inner_bi[:, -1, 0], enc_outs_inner_bi[:, 0, 1]], -1 ).view(batch_size, 1, -1)
+        # enc_outs_inner_last = torch.cat( [enc_outs_inner_bi[:, -1, 0], enc_outs_inner_bi[:, 0, 1]], -1 ).view(batch_size, 1, -1)
         # print(enc_outs_inner_last.size())
 
-        enc_outs_inner_last = enc_outs_inner_last.repeat_interleave(enc_outs_op.size(1), 1)
-        enc_outs = torch.cat([enc_outs_op, enc_outs_inner_last], -1)
+        # enc_outs_inner_last = enc_outs_inner_last.repeat_interleave(enc_outs_op.size(1), 1)
+        # enc_outs = torch.cat([enc_outs_op, enc_outs_inner_last], -1)
 
-        self.sp_dec.init_state(enc_final_op)
-        self.wd_dec.init_state(enc_final_op)
+        self.sp_dec.init_state(enc_final)
+        self.wd_dec.init_state(enc_final)
 
         ph_bank_emb_raw = self.word_emb(tensor_dict["phrase_bank"])
 

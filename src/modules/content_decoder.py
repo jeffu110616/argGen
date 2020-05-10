@@ -20,7 +20,7 @@ class WordDecoder(nn.Module):
 
         if opt.task == "arggen":
             self.stype_n = 4
-            attn_key_dim = 512 * 2
+            attn_key_dim = 512
         elif opt.task == "wikigen":
             self.stype_n = 5
             attn_key_dim = 300
