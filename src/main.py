@@ -114,15 +114,25 @@ opt = parser.parse_args()
 
 def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
     ckpt_path = misc_utils.EXP_DIR + opt.exp_name + "/"
+    start_m_epoch = 1
+    
     if not os.path.exists(ckpt_path):
         os.mkdir(ckpt_path)
+    elif opt.load_model_path:
+        opt.load_model_path = misc_utils.EXP_DIR + opt.exp_name + "/" + opt.load_model_path
+        ckpt_name_lst = glob.glob(opt.load_model_path)
+
+        assert len(ckpt_name_lst) == 1, "cannot find specified checkpoint in %s" % opt.load_model_path
+
+        ckpt_fpath = ckpt_name_lst[0]
+        misc_utils.load_prev_checkpoint(model, ckpt_fpath, None)
     elif os.listdir(ckpt_path) and not opt.debug:
         raise ValueError("Output directory ({}) already exists and is not empty!".format(ckpt_path))
+    else:
+        with open(ckpt_path + "config.json", 'w') as f:
+            json.dump(vars(opt), f)
 
-    with open(ckpt_path + "config.json", 'w') as f:
-        json.dump(vars(opt), f)
-
-    fout_log = open(ckpt_path + "training.log", 'w')
+    fout_log = open(ckpt_path + "training.log", 'a')
     tb_writer = SummaryWriter(os.path.join(ckpt_path + "tensorboard"))
 
     train_data = TASK_CONFIG[opt.task][1](set_type="train")

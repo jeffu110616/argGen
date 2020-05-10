@@ -90,11 +90,27 @@ class Model(nn.Module):
         cs_loss = torch.sum(cs_loss_masked) / torch.sum(ph_bank_mask)
         return cs_loss
 
+class InputEmbedding(nn.Module):
+    def __init__(self, word_emb, opt):
+        super(InputEmbedding, self).__init__()
+        self.word_emb = word_emb
+        self.speaker_emb = nn.Embedding(
+            num_embeddings=3, # 0: MASK, 1: Original poster, 2: Others
+            embedding_dim=300,
+            padding_idx=0,
+        )
+        return
+
+    def forward(self, input_ids, input_ops):
+        wordEmbbed = self.word_emb(input_ids)
+        speakerEmbbed = self.speaker_emb(input_ops)
+        return (wordEmbbed + speakerEmbbed)
 
 class ArgGenModel(Model):
 
     def __init__(self, word_emb, vocab_size, opt):
         super(ArgGenModel, self).__init__(word_emb, vocab_size, opt)
+
         self.encoder = EncoderRNN(opt)
 
     def forward_enc(self, src_inputs_tensor, src_len_tensor):
