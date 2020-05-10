@@ -113,16 +113,26 @@ opt = parser.parse_args()
 
 
 def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
+    start_n_epoch = 1
     ckpt_path = misc_utils.EXP_DIR + opt.exp_name + "/"
     if not os.path.exists(ckpt_path):
         os.mkdir(ckpt_path)
+    elif opt.load_model_path:
+        opt.load_model_path = misc_utils.EXP_DIR + opt.exp_name + "/" + opt.load_model_path
+        ckpt_name_lst = glob.glob(opt.load_model_path)
+
+        assert len(ckpt_name_lst) == 1, "cannot find specified checkpoint in %s" % opt.load_model_path
+
+        ckpt_fpath = ckpt_name_lst[0]
+        start_n_epoch = misc_utils.load_prev_checkpoint(model, ckpt_fpath, None)
+        print("Resume training... start with epoch {}".format(start_n_epoch))
     elif os.listdir(ckpt_path) and not opt.debug:
         raise ValueError("Output directory ({}) already exists and is not empty!".format(ckpt_path))
 
     with open(ckpt_path + "config.json", 'w') as f:
         json.dump(vars(opt), f)
 
-    fout_log = open(ckpt_path + "training.log", 'w')
+    fout_log = open(ckpt_path + "training.log", 'a')
     tb_writer = SummaryWriter(os.path.join(ckpt_path + "tensorboard"))
 
     train_data = TASK_CONFIG[opt.task][1](set_type="train")
@@ -157,7 +167,7 @@ def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
         fout_log.flush()
 
 
-    for n_epoch in range(1, opt.num_train_epochs + 1):
+    for n_epoch in range(start_n_epoch, opt.num_train_epochs + 1):
 
         logging.info("--------------- STARTING EPOCH %d ---------------" % n_epoch)
         model.train()

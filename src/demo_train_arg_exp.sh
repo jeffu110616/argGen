@@ -9,4 +9,5 @@ python main.py --mode=train \
     	--max_src_words=500 \
 	    --max_passage_words=200 \
 		--max_sent_num=10 \
-		--max_bank_size=70 
+		--max_bank_size=70 \
+		--load_model_path=epoch_7_train_181.8892_val_186.7380_ppl_7.7061.tar
