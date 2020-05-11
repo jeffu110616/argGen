@@ -214,7 +214,7 @@ def _load_arggen_train_data(demo=False):
             raw_lns = raw_lns[:10]
         else:
             # raw_lns = open(DATA_DIR + "arggen/%s.jsonl" % set_type).readlines()
-            raw_lns = open(DATA_DIR + "mt_arggen_20/%s.jsonl" % set_type).readlines()
+            raw_lns = open(DATA_DIR + "mt_arggen_20/%s.jsonl.op" % set_type).readlines()
 
         for ln in tqdm(raw_lns):
             cur_obj = json.loads(ln)

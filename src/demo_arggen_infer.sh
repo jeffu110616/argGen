@@ -1,5 +1,5 @@
 python main.py --mode=predict \
-    --exp_name=arggen_mt_20 \
+    --exp_name=arggen_mt_20_test \
     --encode_passage \
     --replace_unk \
     --type_conditional_lm \
