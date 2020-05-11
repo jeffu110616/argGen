@@ -65,7 +65,7 @@ def _load_arggen_test_data(demo=False, opt=None):
         cur_inner_set = list()
         cur_inner_speaker = list()
         for utter in cur_obj['inners']:
-            cur_inner_set.append(utter['body'])
+            cur_inner_set.append([utter['body']])
             cur_inner_speaker.append(utter['isOP'])
         dataset["inners"].append(cur_inner_set)
         dataset["speaker"].append(cur_inner_speaker)

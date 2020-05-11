@@ -9,25 +9,12 @@ def infer_batch(model, batch, opt, eos_symbols):
     """
     Run inference over a batch
     """
-    batch_size = len(batch["src_lens"])
-    enc_outs_op, enc_final_op = model.forward_enc(src_inputs_tensor=batch["src_inputs"],
-                                src_len_tensor=batch["src_lens"])
+    batch_size = len(batch["src_inner_lens"])
+    enc_outs_op, enc_final_op = model.forward_enc(src_inputs_tensor=batch["src_inner_inputs"],
+                                src_len_tensor=batch["src_inner_lens"])
 
-    # Needed to sort manually
-    _, sorted_indice = torch.sort(batch["src_inner_lens"], descending=True)
-    _, inv_sorted_indice = torch.sort(sorted_indice, descending=False)
-    enc_outs_inner, enc_final_inner = model.forward_enc(src_inputs_tensor=batch["src_inner_inputs"][sorted_indice],
-                        src_len_tensor=batch["src_inner_lens"][sorted_indice])
-
-    enc_outs_inner = enc_outs_inner[inv_sorted_indice]
-    enc_outs_inner_bi = enc_outs_inner.view(enc_outs_inner.size(0), enc_outs_inner.size(1), 2, -1)
-    enc_outs_inner_last = torch.cat( [enc_outs_inner_bi[:, -1, 0], enc_outs_inner_bi[:, 0, 1]], -1 ).view(batch_size, 1, -1)
-
-    enc_outs_inner_last = enc_outs_inner_last.repeat_interleave(enc_outs_op.size(1), 1)
-    enc_outs = torch.cat([enc_outs_op, enc_outs_inner_last], -1)
-
-    enc_memory_length = utils.tile(batch["src_lens"], opt.beam_size, 0)
-    enc_memory_bank = utils.tile(enc_outs, opt.beam_size, 0)
+    enc_memory_length = utils.tile(batch["src_inner_lens"], opt.beam_size, 0)
+    enc_memory_bank = utils.tile(enc_outs_op, opt.beam_size, 0)
 
     model.sp_dec.init_state(enc_final_op)
     model.wd_dec.init_state(enc_final_op)
