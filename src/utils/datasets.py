@@ -223,8 +223,6 @@ class ArgDataset(Dataset):
             return {"src_inputs": self.src_inputs[index],
                     "src_spks": self.src_spks[index],
                     "src_lens": self.src_lens[index],
-                    "src_inner_inputs": self.src_inner_inputs[index],
-                    "src_inner_lens": self.src_inner_lens[index],
                     "phrase_bank_words": self.phrase_bank_words[index],
                     "tid": self.tids[index],
                     "src_strs": self.src_strs[index],
@@ -345,7 +343,7 @@ class DataSampler(object):
         for k, v in batch_data.items():
 
             # currently the dimensionality check is by hand
-            if k in ["src_inputs", "src_spks", "src_inner_inputs", "tgt_word_ids_input", "tgt_word_ids_output", "tgt_sent_ids"]:
+            if k in ["src_inputs", "src_spks", "tgt_word_ids_input", "tgt_word_ids_output", "tgt_sent_ids"]:
                 padded, mask = utils.pad_2d_sequence(v)
 
             elif k in ["phrase_bank"]:
