@@ -7,4 +7,4 @@ python main.py --mode=predict \
     --infer_fold_selected=4 \
     --task=arggen \
     --batch_size=20 \
-    --load_model_path=epoch_20_train_166.6488_val_181.0196_ppl_8.0452.tar
+    --load_model_path=epoch_21_train_166.7865_val_181.5731_ppl_8.0979.tar
