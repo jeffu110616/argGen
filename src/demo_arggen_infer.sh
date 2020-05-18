@@ -1,7 +1,7 @@
 python main.py --mode=predict \
     --exp_name=arggen_20_noEncPsgSingle \
-    --infer_fold=2 \
-    --infer_fold_selected=2 \
+    --infer_fold=4 \
+    --infer_fold_selected=4 \
     --replace_unk \
     --type_conditional_lm \
     --task=arggen \

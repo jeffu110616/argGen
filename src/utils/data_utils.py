@@ -28,7 +28,7 @@ def _load_arggen_test_data(demo=False, opt=None):
     Load test data for argument generation task.
     """
     # path = DATA_DIR + "arggen/test.jsonl"
-    path = DATA_DIR + "mt_arggen_20/test.jsonl.op"
+    path = DATA_DIR + "mt_arggen_20/test.jsonl.filtered"
     dataset = {"op": [], "passages": [], "passage_kp": [], "id": [], "targetId": []}
 
     logging.info("Loading test data for arggen...")
