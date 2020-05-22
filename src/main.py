@@ -119,6 +119,7 @@ def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
     if not os.path.exists(ckpt_path):
         os.mkdir(ckpt_path)
     elif opt.load_model_path:
+        print("Resume training...", end="")
         opt.load_model_path = misc_utils.EXP_DIR + opt.exp_name + "/" + opt.load_model_path
         ckpt_name_lst = glob.glob(opt.load_model_path)
 
@@ -126,7 +127,7 @@ def run_training(model, train_dev_data_raw, optimizer, vocab, opt, device):
 
         ckpt_fpath = ckpt_name_lst[0]
         start_n_epoch = misc_utils.load_prev_checkpoint(model, ckpt_fpath, None)
-        print("Resume training... start with epoch {}".format(start_n_epoch))
+        print(" start with epoch {}".format(start_n_epoch))
     elif os.listdir(ckpt_path) and not opt.debug:
         raise ValueError("Output directory ({}) already exists and is not empty!".format(ckpt_path))
     else:
@@ -245,7 +246,7 @@ def run_inference(model, test_data_raw, vocab, opt, device):
                         % (misc_utils.EXP_DIR + opt.exp_name)
     Path(infer_path).mkdir(parents=True, exist_ok=True)
     if opt.infer_fold_selected != -1:
-        fout_log = open(infer_path + "/filtered_output_{}.jsonlist".format(opt.infer_fold_selected), "w")
+        fout_log = open(infer_path + "/e22val_output_{}.jsonlist".format(opt.infer_fold_selected), "w")
     else:
         fout_log = open(infer_path + "/output.jsonlist", "w")
 
@@ -267,7 +268,7 @@ def main():
 
     logging.info("Building generation model...")
 
-    os.environ['CUDA_VISIBLE_DEVICES']='1'
+    # os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # device = torch.device("cpu")
 

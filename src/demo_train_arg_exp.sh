@@ -4,9 +4,10 @@ python main.py --mode=train \
 		--type_conditional_lm \
 		--task=arggen \
 		--batch_size=32 \
-		--num_train_epochs=50 \
+		--num_train_epochs=70 \
 		--logging_freq=2 \
     	--max_src_words=500 \
 	    --max_passage_words=200 \
 		--max_sent_num=10 \
-		--max_bank_size=70 
+		--max_bank_size=70 \
+		--load_model_path=epoch_26_train_167.7252_val_183.4208_ppl_7.4328.tar

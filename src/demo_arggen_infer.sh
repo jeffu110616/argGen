@@ -3,8 +3,9 @@ python main.py --mode=predict \
     --encode_passage \
     --replace_unk \
     --type_conditional_lm \
-    --infer_fold=4 \
-    --infer_fold_selected=4 \
+    --infer_fold=2 \
+    --infer_fold_selected=2 \
+    --max_tgt_words=150 \
     --task=arggen \
     --batch_size=32 \
-    --load_model_path=epoch_20_train_170.5814_val_183.0892_ppl_7.4044.tar
+    --load_model_path=epoch_22_train_169.5218_val_183.2123_ppl_7.4148.tar
