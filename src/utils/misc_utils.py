@@ -224,7 +224,7 @@ def pad_3d_sequence(raw_input, pad_token=0):
     max_2nd_dim = max([len(x) for x in raw_input])
     max_3rd_dim = 0
     for sample in raw_input:
-        sample_max = max([len(ph) for ph in sample])
+        sample_max = max([len(ph) for ph in sample]) if len(sample) > 0 else 0
         max_3rd_dim = max(max_3rd_dim, sample_max)
 
     padded_3d_array = pad_token * np.ones([len(raw_input), max_2nd_dim, max_3rd_dim])
