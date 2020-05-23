@@ -168,7 +168,10 @@ def infer_epoch(model, data_sampler, vocab, opt, fout):
                     if w in ["SEP", "EOS", "SOS", "PAD"]: continue
                     if w == "UNK":
                         _, max_index = wd_results[ix]["attention"][0][wid].max(0)
-                        replaced = cur_src_str[max_index.item()]
+                        try:
+                            replaced = cur_src_str[max_index.item()]
+                        except:
+                            replaced = " "
                         unk_free.append(replaced)
                     else:
                         unk_free.append(w)

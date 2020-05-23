@@ -243,7 +243,7 @@ def run_inference(model, test_data_raw, vocab, opt, device):
                         % (misc_utils.EXP_DIR + opt.exp_name)
     Path(infer_path).mkdir(parents=True, exist_ok=True)
     if opt.infer_fold_selected != -1:
-        fout_log = open(infer_path + "/filtered_output_{}.jsonlist".format(opt.infer_fold_selected), "w")
+        fout_log = open(infer_path + "/e22val_output_{}.jsonlist".format(opt.infer_fold_selected), "w")
     else:
         fout_log = open(infer_path + "/output.jsonlist", "w")
 
