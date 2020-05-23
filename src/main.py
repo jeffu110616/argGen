@@ -233,7 +233,7 @@ def run_inference(model, test_data_raw, vocab, opt, device):
                         % (misc_utils.EXP_DIR + opt.exp_name)
     Path(infer_path).mkdir(parents=True, exist_ok=True)
     if opt.infer_fold_selected != -1:
-        fout_log = open(infer_path + "/e27val_output_{}.jsonlist".format(opt.infer_fold_selected), "w")
+        fout_log = open(infer_path + "/e15test_output_{}.jsonlist".format(opt.infer_fold_selected), "w")
     else:
         fout_log = open(infer_path + "/output.jsonlist", "w")
 
@@ -252,7 +252,7 @@ def main():
     word_emb = nn.Embedding.from_pretrained(torch.tensor(glove_emb, dtype=torch.float))
 
     logging.info("Building generation model...")
-    os.environ['CUDA_VISIBLE_DEVICES']='1'
+    # os.environ['CUDA_VISIBLE_DEVICES']='1'
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = TASK_CONFIG[opt.task][0](word_emb=word_emb, vocab_size=len(vocab), opt=opt).to(device)
